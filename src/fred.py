@@ -1,3 +1,16 @@
+# in src/fred.py, at the top
+
+# DATA PRECISION NOTE
+# FRED and Treasury publish yields to 2dp (0.01% = 1bp) and index levels to 3dp.
+# That is the source precision - we are not truncating anything.
+# Consequences to be aware of:
+#   - differencing two 2dp values can produce +/-1bp of rounding noise
+#   - identities (nominal = real + breakeven) may break by 1bp for this reason
+#   - a 5bp+ break means something real, a 1bp break is rounding
+# Treasury's par curve is itself a FITTED curve, not traded prices. ACM term
+# premium is a model estimate - read changes, treat levels with caution.
+# A real desk works off Bloomberg/Refinitiv tick data or raw CUSIP pricing.
+
 import requests
 from config import FRED_KEY
 
