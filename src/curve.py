@@ -60,6 +60,36 @@ def spreads(df):
     out['3m10y'] = (df['10 Yr'] - df['3 Mo']) * 100
     return out
 
+def regime_history(df):
+    # label every day in the dataset, not just the latest
+    chg = daily_change(df)
+    out = []
+    for i in range(1, len(df)):
+        label = classify_regime(chg.loc[i])
+        # strip the bracketed level/slope detail so we can group by regime name
+        bare = label.split('  [')[0]
+        out.append({'date': df.loc[i, 'Date'].date(), 'regime': bare})
+    return out
+
+def regime_summary(history):
+    counts = {}
+    for h in history:
+        counts[h['regime']] = counts.get(h['regime'], 0) + 1
+    return counts
+
+def current_run(history):
+    # how many consecutive sessions in the current regime.
+    # regimes persist because the narrative behind them changes slowly,
+    # so an unusually long run is worth noticing
+    latest = history[-1]['regime']
+    run = 0
+    for h in reversed(history):
+        if h['regime'] == latest:
+            run += 1
+        else:
+            break
+    return latest, run
+
 if __name__ == "__main__":
     df = get_treasury_curve(2026)
     chg = daily_change(df)
@@ -72,4 +102,14 @@ if __name__ == "__main__":
         print(f"{date}  2y={df.loc[i,'2 Yr']:.2f}% ({chg.loc[i,'2 Yr']:+.0f}bp)  "
               f"10y={df.loc[i,'10 Yr']:.2f}% ({chg.loc[i,'10 Yr']:+.0f}bp)  "
               f"2s10s={spr.loc[i,'2s10s']:.0f}bp   {regime}")
+
+        hist = regime_history(df)
+
+    print("\n--- regime frequency, 2026 YTD ---")
+    total = len(hist)
+    for regime, count in sorted(regime_summary(hist).items(), key=lambda x: -x[1]):
+        print(f"  {regime:>42}: {count:>3} days ({count/total*100:>4.1f}%)")
+
+    latest, run = current_run(hist)
+    print(f"\ncurrent: {latest}, running {run} sessions")
         
