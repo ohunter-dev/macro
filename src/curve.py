@@ -60,13 +60,13 @@ def spreads(df):
     out['3m10y'] = (df['10 Yr'] - df['3 Mo']) * 100
     return out
 
-def regime_history(df):
-    # label every day in the dataset, not just the latest
+def regime_history(df, threshold_bp=3):
+    # threshold passed through so we can test how sensitive the whole
+    # distribution is to where we draw the "this is just noise" line
     chg = daily_change(df)
     out = []
     for i in range(1, len(df)):
-        label = classify_regime(chg.loc[i])
-        # strip the bracketed level/slope detail so we can group by regime name
+        label = classify_regime(chg.loc[i], threshold_bp=threshold_bp)
         bare = label.split('  [')[0]
         out.append({'date': df.loc[i, 'Date'].date(), 'regime': bare})
     return out
@@ -105,11 +105,16 @@ if __name__ == "__main__":
 
         hist = regime_history(df)
 
-    print("\n--- regime frequency, 2026 YTD ---")
-    total = len(hist)
-    for regime, count in sorted(regime_summary(hist).items(), key=lambda x: -x[1]):
-        print(f"  {regime:>42}: {count:>3} days ({count/total*100:>4.1f}%)")
+    print("\n--- regime frequency, 2026 YTD, at different thresholds ---")
+    for thresh in [2, 3, 5]:
+        hist = regime_history(df, threshold_bp=thresh)
+        total = len(hist)
+        print(f"\nthreshold = {thresh}bp:")
+        for regime, count in sorted(regime_summary(hist).items(), key=lambda x: -x[1]):
+            print(f"  {regime:>42}: {count:>3} days ({count/total*100:>4.1f}%)")
 
+    # current run at the default threshold
+    hist = regime_history(df, threshold_bp=3)
     latest, run = current_run(hist)
-    print(f"\ncurrent: {latest}, running {run} sessions")
+    print(f"\ncurrent (3bp): {latest}, running {run} sessions")
         
