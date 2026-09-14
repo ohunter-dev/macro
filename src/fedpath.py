@@ -1,5 +1,6 @@
 from datetime import date
 from calendar import monthrange
+from src.fred import get_fred_series
 
 # 2026 FOMC decision dates. rate changes take effect the day AFTER the
 # announcement, since they announce at 2pm ET
@@ -60,10 +61,18 @@ def fed_path_from_price(price, year, month, current_rate, move_size=0.25):
         'prob_of_move': hike_probability(post, current_rate, move_size),
     }
 
+def get_current_effr():
+    # EFFR trades a few bp below the target midpoint, so using the actual
+    # published rate is more honest than assuming the midpoint
+    obs = get_fred_series("EFFR")['observations']
+    clean = [o for o in obs if o['value'] != '.']
+    return float(clean[-1]['value']), clean[-1]['date']
+
 if __name__ == "__main__":
     # sanity check with made-up numbers before touching real data.
     # current effective fed funds ~3.63% (midpoint of 3.50-3.75 target)
-    current = 3.63
+    current, effr_date = get_current_effr()
+    print(f"using EFFR {current}% as of {effr_date}\n")
 
     # if the market fully priced a 25bp hike on 16 Sept, what would the
     # september contract print? work it forward to check the maths
@@ -85,3 +94,16 @@ if __name__ == "__main__":
         r = fed_path_from_price(px, 2026, 9, current)
         print(f"{px:>9.4f} {r['implied_avg']:>11.4f}% {r['post_meeting_rate']:>9.3f}% "
               f"{r['implied_move_bp']:>8.1f} {r['prob_of_move']*100:>8.1f}%")
+
+
+        # kalshi says 86% as of now. what should the september ZQ contract print
+    # if the futures market agrees? this is the cross-check - two completely
+    # different markets, same underlying event
+    print("\n--- implied ZQ price from Kalshi's 86% ---")
+    kalshi_prob = 0.86
+    implied_post = current + 0.25 * kalshi_prob
+    d_old, d_new, total = split_month(2026, 9)
+    implied_avg = (d_old/total)*current + (d_new/total)*implied_post
+    implied_px = 100 - implied_avg
+    print(f"P(hike)={kalshi_prob:.0%} -> post-meeting {implied_post:.4f}% "
+          f"-> avg {implied_avg:.4f}% -> ZQ {implied_px:.4f}")
