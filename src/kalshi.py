@@ -38,6 +38,25 @@ def find_meeting_markets(series_ticker, event_ticker):
                if m.get("event_ticker") == event_ticker]
     return sorted(markets, key=lambda m: m.get("floor_strike", 0))
 
+# instead of five separate loops each re-deriving bid/ask/spread by hand
+def ladder_stats(markets, event_ticker):
+    rows = []
+    for m in markets:
+        if m.get("event_ticker") != event_ticker:
+            continue
+        bid = float(m.get("yes_bid_dollars") or 0)
+        ask = float(m.get("yes_ask_dollars") or 0)
+        if bid == 0 and ask == 0:
+            continue
+        rows.append({
+            "strike": float(m["floor_strike"]),
+            "cum_prob": (bid + ask) / 2,
+            "spread": ask - bid,
+            "volume": float(m.get("volume_fp") or 0),
+        })
+    return sorted(rows, key=lambda x: x["strike"])
+
+
 if __name__ == "__main__":
     data = get_markets("KXFED")
     markets = data.get("markets", [])
