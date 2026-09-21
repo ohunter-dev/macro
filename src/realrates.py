@@ -1,4 +1,4 @@
-from src.fred import get_fred_series
+from src.fred import get_fred_series, get_clean
 
 # DGS10   - nominal 10y
 # DFII10  - 10y TIPS, i.e. the real yield
@@ -16,11 +16,6 @@ SERIES = {
     'breakeven_5y':  'T5YIE',
     'fwd_5y5y':      'T5YIFR',
 }
-
-def get_clean(series_id):
-    obs = get_fred_series(series_id)['observations']
-    # same "." filter as the inflation module - FRED marks gaps this way
-    return {o['date']: float(o['value']) for o in obs if o['value'] != '.'}
 
 def build_table(n_days=5):
     data = {label: get_clean(sid) for label, sid in SERIES.items()}

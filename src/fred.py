@@ -25,3 +25,9 @@ def get_fred_series(series_id):
     }
     r = requests.get(url, params=params)
     return r.json()
+
+def get_clean(series_id):
+    # same "." filter every FRED-consuming module needs - FRED marks
+    # missing observations this way, and float() chokes on it otherwise
+    obs = get_fred_series(series_id)['observations']
+    return {o['date']: float(o['value']) for o in obs if o['value'] != '.'}
