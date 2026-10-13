@@ -1,4 +1,4 @@
-from src.fred import get_fred_series
+from src.fred import get_clean
 
 # ACM model, published by the NY Fed and mirrored on FRED.
 #   THREEFYTP10 - estimated term premium on a 10y zero coupon bond
@@ -11,10 +11,6 @@ SERIES = {
     'fitted_10y':       'THREEFY10',
     'market_10y':       'DGS10',
 }
-
-def get_clean(series_id):
-    obs = get_fred_series(series_id)['observations']
-    return {o['date']: float(o['value']) for o in obs if o['value'] != '.'}
 
 def build_table(n_days=6):
     data = {label: get_clean(sid) for label, sid in SERIES.items()}

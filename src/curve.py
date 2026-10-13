@@ -103,8 +103,6 @@ if __name__ == "__main__":
               f"10y={df.loc[i,'10 Yr']:.2f}% ({chg.loc[i,'10 Yr']:+.0f}bp)  "
               f"2s10s={spr.loc[i,'2s10s']:.0f}bp   {regime}")
 
-        hist = regime_history(df)
-
     print("\n--- regime frequency, 2026 YTD, at different thresholds ---")
     for thresh in [2, 3, 5]:
         hist = regime_history(df, threshold_bp=thresh)

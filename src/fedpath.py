@@ -7,7 +7,7 @@ from src.fred import get_fred_series
 FOMC_DATES_2026 = [
     date(2026, 1, 28), date(2026, 3, 18), date(2026, 4, 29),
     date(2026, 6, 17), date(2026, 7, 29), date(2026, 9, 16),
-    date(2026, 11, 4), date(2026, 12, 16),
+    date(2026, 10, 28), date(2026, 12, 9),
 ]
 
 def implied_rate(price):
@@ -69,8 +69,7 @@ def get_current_effr():
     return float(clean[-1]['value']), clean[-1]['date']
 
 if __name__ == "__main__":
-    # sanity check with made-up numbers before touching real data.
-    # current effective fed funds ~3.63% (midpoint of 3.50-3.75 target)
+    # gotta check the maths both ways using today's EFFR
     current, effr_date = get_current_effr()
     print(f"using EFFR {current}% as of {effr_date}\n")
 
@@ -96,7 +95,7 @@ if __name__ == "__main__":
               f"{r['implied_move_bp']:>8.1f} {r['prob_of_move']*100:>8.1f}%")
 
 
-        # kalshi says 86% as of now. what should the september ZQ contract print
+    # kalshi showed 86% when I ran this in sept 2026. what should the september ZQ contract print
     # if the futures market agrees? this is the cross-check - two completely
     # different markets, same underlying event
     print("\n--- implied ZQ price from Kalshi's 86% ---")
