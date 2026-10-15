@@ -5,8 +5,8 @@ from src.kalshi import get_markets, ladder_stats
 # is settled and no longer appears in the open-markets list.
 MEETINGS = [
     ("KXFED-26OCT", "2026-10-28"),
-    ("KXFED-26DEC", None),
-    ("KXFED-27JAN", None),
+    ("KXFED-26DEC", "2026-12-09"),
+    ("KXFED-27JAN", "2027-01-30"),
     ("KXFED-27MAR", None),
     ("KXFED-27APR", "2027-04-28"),   # confirmed from the market's own rules text
 ]
