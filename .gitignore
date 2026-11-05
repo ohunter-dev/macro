@@ -1,4 +1,5 @@
 .venv/
 __pycache__/
 *.pyc
-config.pyscratch_check.py
+config.py
+scratch_check.py
